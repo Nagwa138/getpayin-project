@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Http\Requests\API\Post;
+
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+
+class PostListRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'user_id' => 'required|integer|exists:users,id',
+            'start_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'status' => 'sometimes|in:draft,scheduled,published',
+        ];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUserId(): mixed
+    {
+        return $this->input('user_id');
+    }
+}

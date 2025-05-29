@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Architecture\DTO\PostDTO;
+use App\Architecture\Repositories\Interfaces\IPostRepository;
+use App\Architecture\Services\Interfaces\IPostService;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\API\Post\PostListRequest;
+use App\Http\Requests\API\Post\PostStoreRequest;
+use App\Http\Requests\API\Post\PostUpdateRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
+
+class PostController extends Controller
+{
+    /**
+     * @param IPostService $postService
+     */
+    public function __construct(
+        public IPostService $postService,
+    )
+    {}
+
+    /**
+     * Store a newly created post with platforms
+     */
+    public function store(PostStoreRequest $request): JsonResponse
+    {
+        dd('hola');
+        return $this->postService->create(array_filter((array)PostDTO::fromRequest($request->safe()->toArray())));
+    }
+
+    /**
+     * List posts by user id
+     *
+     * @param PostListRequest $request
+     * @return JsonResponse
+     */
+    public function listByUser(PostListRequest $request): JsonResponse
+    {
+        return $this->postService->listByUser($request->getUserId(), Arr::except($request->safe()->toArray(), 'user_id'));
+    }
+
+    /**
+     * @param PostUpdateRequest $request
+     * @return JsonResponse
+     */
+    public function update(PostUpdateRequest $request): JsonResponse
+    {
+        $post = app(IPostRepository::class)->first(['id' => $request->getPostId()]);
+        if ($request->hasFile('image') && $post->image_url) removeFile($post->image_url);
+        return $this->postService->update($request->getPostId(), Arr::except($request->safe()->toArray(), 'post'));
+    }
+
+    /**
+     * @param int $post
+     * @return JsonResponse
+     */
+    public function delete(int $post): JsonResponse
+    {
+        return $this->postService->delete($post);
+    }
+}
